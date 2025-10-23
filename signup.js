@@ -1,41 +1,34 @@
-document.getElementById("signupForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    try {
-        const username = document.getElementById("username").value.trim();
-        const password = document.getElementById("password").value.trim();
-        const confirmPassword = document.getElementById("confirmPassword").value.trim();
+document.getElementById("signupForm").addEventListener("submit", (e) => {
+  e.preventDefault();
 
-        if (!username || !password || !confirmPassword) {
-            alert("All fields are required.");
-            return;
-        }
+  const username = document.getElementById("username").value.trim();
+  const password = document.getElementById("password").value.trim();
+  const confirmPassword = document.getElementById("confirmPassword").value.trim();
 
-        if (password !== confirmPassword) {
-            alert("Passwords do not match.");
-            return;
-        }
+  if (!username || !password || !confirmPassword) {
+    alert("All fields are required.");
+    return;
+  }
 
-        const res = await fetch(`http://localhost:3000/users?username=${encodeURIComponent(username)}`);
-        const existingUsers = await res.json();
-        if (existingUsers.length > 0) {
-            alert("Username is already taken. Please choose another one.");
-            return;
-        }
+  if (password !== confirmPassword) {
+    alert("Passwords do not match.");
+    return;
+  }
 
-        const createUser = await fetch("http://localhost:3000/users", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ username, password })
-        });
+  // Retrieve existing users from localStorage
+  const users = JSON.parse(localStorage.getItem("users")) || [];
 
-        if (!createUser.ok) {
-            throw new Error("Failed to create user");
-        }
+  // Check if username already exists
+  const userExists = users.some((user) => user.username === username);
+  if (userExists) {
+    alert("Username is already taken. Please choose another one.");
+    return;
+  }
 
-        // Redirect
-        window.location.href = "login.html";
-    } catch (err) {
-        console.error("Signup error:", err);
-        alert("Something went wrong. Check console for details.");
-    }
+  // Add new user
+  users.push({ username, password });
+  localStorage.setItem("users", JSON.stringify(users));
+
+  alert("Signup successful! You can now log in.");
+  window.location.href = "login.html";
 });
